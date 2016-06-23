@@ -225,6 +225,15 @@ bool App::handleEvent(const Window::Event& ev) {
 			camera_rotation_angle_ -= 0.05 * FW_PI;
 		else if (ev.key == FW_KEY_END)
 			camera_rotation_angle_ += 0.05 * FW_PI;
+		else if (ev.key == FW_KEY_UP)
+			model_translation_.y++;
+		else if (ev.key == FW_KEY_DOWN)
+			model_translation_.y--;
+		else if (ev.key == FW_KEY_LEFT)
+			model_translation_.x++;
+		else if (ev.key == FW_KEY_RIGHT)
+			model_translation_.x--;
+
 	}
 	
 	if (ev.type == Window::EventType_KeyUp) {
@@ -383,6 +392,8 @@ void App::render() {
 	// YOUR CODE HERE (R1)
 	// Set the model space -> world space transform to translate the model according to user input.
 	Mat4f modelToWorld;
+	auto v = Vec4f(model_translation_, 1);
+	modelToWorld.setCol(3, v);
 	
 	// Draw the model with your model-to-world transformation.
 	glUniformMatrix4fv(gl_.model_to_world_uniform, 1, GL_FALSE, modelToWorld.getPtr());

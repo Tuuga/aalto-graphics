@@ -61,7 +61,7 @@ private:
 	std::vector<Vertex>	vertices_;
 
 	float				camera_rotation_angle_;
-
+	Vec3f				model_translation_;
 	// YOUR CODE HERE (R1)
 	// Add a class member to store the current translation.
 
