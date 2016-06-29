@@ -56,24 +56,34 @@ vector<Vertex> unpackIndexedData(
 	const vector<array<unsigned, 6>>& faces)
 {
 	vector<Vertex> vertices;
-
 	// This is a 'range-for' loop which goes through all objects in the container 'faces'.
 	// '&' gives us a reference to the object inside the container; if we omitted '&',
 	// 'f' would be a copy of the object instead.
 	// The compiler already knows the type of objects inside the container, so we can
 	// just write 'auto' instead of having to spell out 'array<unsigned, 6>'.
 	for (auto& f : faces) {
-
 		// YOUR CODE HERE (R3)
 		// Unpack the indexed data into a vertex array. For every face, you have to
 		// create three vertices and add them to the vector 'vertices'.
+
+		Vertex v0, v1, v2;
+
+
+		v0.position = positions[f[0]];
+		v0.normal = normals[f[1]];
+		v1.position = positions[f[2]];
+		v1.normal = normals[f[3]];
+		v2.position = positions[f[4]];
+		v2.normal = normals[f[5]];
+
+		vertices.push_back(v0); vertices.push_back(v1); vertices.push_back(v2);
 
 		// f[0] is the index of the position of the first vertex
 		// f[1] is the index of the normal of the first vertex
 		// f[2] is the index of the position of the second vertex
 		// ...
 	}
-
+	
 	return vertices;
 };
 
@@ -124,6 +134,26 @@ vector<Vertex> loadUserGeneratedModel() {
 
 	// Generate one face at a time
 	for(auto i = 0u; i < faces; ++i)	{
+		v0.position = Vec3f(0,0,0);
+		
+		float v1X = FW::cos(angle_increment * i) * radius;
+		float v1Y = -height;
+		float v1Z = FW::sin(angle_increment * i) * radius;
+
+		v1.position = Vec3f(v1X, v1Y, v1Z);
+		
+		float v2X = FW::cos(angle_increment * (i + 1)) * radius;
+		float v2Y = -height;
+		float v2Z = FW::sin(angle_increment * (i + 1)) * radius;
+
+		v2.position = Vec3f(v2X, v2Y, v2Z);
+
+		Vec3f n = normalize(cross(v2.position, v1.position));
+
+		v0.normal = n;
+		v1.normal = n;
+		v2.normal = n;
+
 		// YOUR CODE HERE (R2)
 		// Figure out the correct positions of the three vertices of this face.
 		// v0.position = ...
@@ -226,13 +256,13 @@ bool App::handleEvent(const Window::Event& ev) {
 		else if (ev.key == FW_KEY_END)
 			camera_rotation_angle_ += 0.05 * FW_PI;
 		else if (ev.key == FW_KEY_UP)
-			model_translation_.y++;
+			model_translation_.y += 0.1f;
 		else if (ev.key == FW_KEY_DOWN)
-			model_translation_.y--;
+			model_translation_.y -= 0.1f;
 		else if (ev.key == FW_KEY_LEFT)
-			model_translation_.x++;
+			model_translation_.x += 0.1f;
 		else if (ev.key == FW_KEY_RIGHT)
-			model_translation_.x--;
+			model_translation_.x -= 0.1f;
 
 	}
 	
@@ -449,9 +479,15 @@ vector<Vertex> App::loadObjFileModel(string filename) {
 			// Read the three vertex coordinates (x, y, z) into 'v'.
 			// Store a copy of 'v' in 'positions'.
 			// See std::vector documentation for push_back.
+			iss >> v.x >> v.y >> v.z;
+			positions.push_back(v);
+			
 		} else if (s == "vn") { // normal
 			// YOUR CODE HERE (R4)
 			// Similar to above.
+			iss >> v.x >> v.y >> v.z;
+			normals.push_back(v);
+			
 		} else if (s == "f") { // face
 			// YOUR CODE HERE (R4)
 			// Read the indices representing a face and store it in 'faces'.
@@ -470,7 +506,15 @@ vector<Vertex> App::loadObjFileModel(string filename) {
 			// If you don't adjust for that, you'll index past the range of your vectors and get a crash.
 
 			// It might be a good idea to print the indices to see that they were read correctly.
-			// cout << f[0] << " " << f[1] << " " << f[2] << " " << f[3] << " " << f[4] << " " << f[5] << endl;
+			iss >> f[0] >> sink >> f[1] >> f[2] >> sink >> f[3] >> f[4] >> sink >> f[5];
+
+			for (int i = 0; i < 6; i++) {
+				f[i]--;
+			}
+
+			faces.push_back(f);
+
+			//cout << f[0] << " " << f[1] << " " << f[2] << " " << f[3] << " " << f[4] << " " << f[5] << endl;
 		}
 	}
 	common_ctrl_.message(("Loaded mesh from " + filename).c_str());
