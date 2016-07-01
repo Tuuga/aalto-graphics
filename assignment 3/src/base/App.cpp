@@ -362,7 +362,7 @@ void App::renderSkeleton() {
 		// YOUR CODE HERE (R1)
 		// Use the transforms to obtain the position of the joint in world space.
 		// This is very simple...
-		Vec3f joint_world_pos;
+		Vec3f joint_world_pos = transforms[i] * Vec3f(0, 0, 0);
 
 		// glBegin()-glEnd() with glVertex() commands in between is how draw calls
 		// are done in immediate mode OpenGL.
@@ -375,12 +375,16 @@ void App::renderSkeleton() {
 		// Immediate mode command drawing an individual vertex
 		glVertex3f(joint_world_pos.x, joint_world_pos.y, joint_world_pos.z);
 		glEnd(); // we're done drawing points
-			
+		
 		// YOUR CODE HERE (R3)
 		// Use the transforms to obtain the joint's orientation.
 		// (If you understand transformation matrices correctly, you can directly
 		// read the these vectors off of the matrices.)
 		Vec3f right, up, ahead;
+
+		right = Vec3f(transforms[i].m00, transforms[i].m10, transforms[i].m20);
+		up = Vec3f(transforms[i].m01, transforms[i].m11, transforms[i].m21);
+		ahead = Vec3f(transforms[i].m02, transforms[i].m12, transforms[i].m22);
 
 		// Then let's draw some lines to show the joint coordinate system.
 		// Draw a small coloured line segment from the joint's world position towards
@@ -389,25 +393,47 @@ void App::renderSkeleton() {
 		const float scale = 0.05;	// length for the coordinate system axes.
 		glBegin(GL_LINES);
 
+		float x, y, z;
+		x = joint_world_pos.x;
+		y = joint_world_pos.y;
+		z = joint_world_pos.z;
+
 		// draw the x axis... ("right")
 		glColor3f(1, 0, 0); // red
 		// glVertex3f(...); glVertex3f(...);
+		glVertex3f(x, y, z);
+		glVertex3f(x + right.normalized().x * scale, y + right.normalized().y * scale, z + right.normalized().z * scale);
+
 
 		// ..and the y axis.. ("up")
 		glColor3f(0, 1, 0); // green
 		// glVertex3f(...); glVertex3f(...);
+		glVertex3f(x, y, z);
+		glVertex3f(x + up.normalized().x * scale, y + up.normalized().y * scale, z + up.normalized().z * scale);
+
+
 
 		// ..and the z axis ("ahead").
 		glColor3f(0, 0, 1); // blue
 		// glVertex3f(...); glVertex3f(...);
+		glVertex3f(x, y, z);
+		glVertex3f(x + ahead.normalized().x * scale, y + ahead.normalized().y * scale, z + ahead.normalized().z * scale);
+
+
 
 		// Finally, draw a line segment from the world position of this joint to the world
 		// position of the parent joint. You should first check if the parent exists
 		// using skel_.getJointParent(i) - it returns -1 for the root, which has no parent.
-			
+		int index = skel_.getJointParent(i);
+		if (index >= 0) {
+			Vec3f parentPos = transforms[index] * Vec3f(0, 0, 0);
+			glVertex3f(x, y, z);
+			glVertex3f(parentPos.x, parentPos.y, parentPos.z);
+		}
+
 		// ...
 
-		glEnd(); // we're done drawing lines	
+		glEnd(); // we're done drawing lines
 	}
 }
 
@@ -422,7 +448,12 @@ vector<Vertex> App::computeSSD(const vector<WeightedVertex>& source_vertices) {
 		// This starter code just copies the source vertex untouched, so the result is not animated.
 		// Replace these lines with the loop that applies the bone transforms and weights.
 		// For R5, transform the normals as well.
-		v.position = sv.position;	
+		Vec3f newPos;
+		for (auto i = 0; i < WEIGHTS_PER_VERTEX; i++) {
+			newPos += ssd_transforms[sv.joints[i]] * sv.weights[i] * sv.position;
+		}
+		v.position = newPos;
+		//v.position = sv.position;
 		v.normal = sv.normal;		
 		v.color = sv.color;
 		skinned_vertices.push_back(v);

@@ -73,6 +73,27 @@ void Skeleton::setJointRotation(unsigned index, Vec3f euler_angles) {
 	// Hints: You can use Mat3f::rotation() three times in a row,
 	// once for each main axis, and multiply the results.
 
+	Mat3f rot =	
+	Mat3f::rotation(Vec3f(1, 0, 0), euler_angles.x) *
+	Mat3f::rotation(Vec3f(0, 1, 0), euler_angles.y) *
+	Mat3f::rotation(Vec3f(0, 0, 1), euler_angles.z);
+
+	Vec4f rotCol0 = Vec4f (rot.getCol(0), 0);
+	Vec4f rotCol1 = Vec4f (rot.getCol(1), 0);
+	Vec4f rotCol2 = Vec4f (rot.getCol(2), 0);
+	
+	/*
+	cout << " " << endl;
+	cout << rotCol0.x << " " << rotCol0.y << " " << rotCol0.z << endl;
+	cout << rotCol1.x << " " << rotCol1.y << " " << rotCol1.z << endl;
+	cout << rotCol2.x << " " << rotCol2.y << " " << rotCol2.z << endl;
+	cout << " " << endl;
+	*/
+
+	joint.to_parent.setCol(0, rotCol0);
+	joint.to_parent.setCol(1, rotCol1);
+	joint.to_parent.setCol(2, rotCol2);
+	
 }
 
 void Skeleton::incrJointRotation(unsigned index, Vec3f euler_angles) {
@@ -88,6 +109,10 @@ void Skeleton::updateToWorldTransforms() {
 void Skeleton::updateToWorldTransforms(unsigned joint_index, const Mat4f& parent_to_world) {
 	// YOUR CODE HERE (R1)
 	// Update transforms for joint at joint_index and its children.
+	joints_[joint_index].to_world = parent_to_world * joints_[joint_index].to_parent;
+	for (auto i : joints_[joint_index].children) {
+		updateToWorldTransforms(i, joints_[joint_index].to_world);
+	}
 }
 
 void Skeleton::computeToBindTransforms() {
@@ -96,6 +121,9 @@ void Skeleton::computeToBindTransforms() {
 	// Given the current to_world transforms for each bone,
 	// compute the inverse bind pose transformations (as per the lecture slides),
 	// and store the results in the member to_bind_joint of each joint.
+	for (auto i : joints_) {
+		i.to_bind_joint = i.to_world.inverted();
+	}
 }
 
 vector<Mat4f> Skeleton::getToWorldTransforms() {
@@ -115,6 +143,10 @@ vector<Mat4f> Skeleton::getSSDTransforms() {
 	// these are the T_i * inv(B_i) matrices.)
 	// This initializes transforms with JOINTS amount of elements, so use the []-operator
 	// to assign values into transforms, not push_back
+	
 	vector<Mat4f> transforms(JOINTS);
+	for (auto i = 0; i < joints_.size(); i++) {
+		transforms[i] = joints_[i].to_world * joints_[i].to_bind_joint;
+	}
 	return transforms;
 }
