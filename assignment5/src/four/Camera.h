@@ -7,22 +7,23 @@
 #include <cfloat>
 #include <cmath>
 
+using namespace std;
+
 class Camera
 {
 public:
 	// generate rays for each screen-space coordinate
-	virtual Ray generateRay(const FW::Vec2f& point) = 0; 
+	virtual Ray generateRay(const FW::Vec2f& point) = 0;
 
 	static inline FW::Vec2f normalizedImageCoordinateFromPixelCoordinate(const FW::Vec2f& pixel, const FW::Vec2i& imageSize) {
 		// YOUR CODE HERE (R1)
 		// Given floating-point pixel coordinates (px,py), you should return the corresponding normalized screen coordinates in [-1,1]^2
 		// Pay attention to which direction is "up" :)
-		FW::Vec2f temp;
-		temp.x = pixel.x / imageSize.x;
-		temp.y = pixel.y / imageSize.y;
-		temp = temp.normalized();
 
-		return FW::Vec2f(temp);
+		auto center = FW::Vec2f(imageSize.x / 2, imageSize.y / 2);
+		auto coord = FW::Vec2f((pixel.x - center.x) / (imageSize.x / 2), (pixel.y - center.y) / (imageSize.y / 2));
+
+		return coord;
 	}
 	
 	virtual float getTMin() const = 0 ;
@@ -74,7 +75,9 @@ public:
 	virtual Ray generateRay(const FW::Vec2f& point) {
 		// YOUR CODE HERE (R1)
 		// Generate a ray with the given screen coordinates, which you should assume lie in [-1,1]^2
-		return Ray(FW::Vec3f(0.0f), FW::Vec3f(0.0f));
+		//cout << "x: " << point.x << " y: " << point.y << endl;
+
+		return Ray(FW::Vec3f(point.x, point.y, 0.0f), FW::Vec3f(0.0f, 0.0f, 1.0f));
 	}
 
 	bool isOrtho() const override { return true; }
