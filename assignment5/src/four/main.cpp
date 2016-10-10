@@ -154,7 +154,17 @@ GLuint render(RayTracer& ray_tracer, SceneParser& scene, const Args& args) {
 					// YOUR CODE HERE (R2)
 					// Here you should map the t range [depth_min, depth_max] to the inverted range [1,0] for visualization
 					// Note that closer objects should appear brighter.
-					float f = 0.0f;
+					
+					float depth = hit.t * -1.0f;
+					//cout << "depth: " << depth << endl;
+					//cout << "tmin: " << tmin << endl;
+
+					// Clamp
+					if (depth > 1.0f) {
+						depth = 1.0f;
+					}
+
+					float f = depth;
 					depth_image->setVec4f(Vec2i(i, j), Vec4f(Vec3f(f), 1));
 				}
 				if (normals_image) {

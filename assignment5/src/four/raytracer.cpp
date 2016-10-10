@@ -51,9 +51,15 @@ Vec3f RayTracer::traceRay(Ray& ray, float tmin, int bounces, float refr_index, H
 	// if the ray missed, we return the background color.
 	if (!intersect)
 		return scene_.getBackgroundColor();
-	
+
 	Material* m = hit.material;
 	assert(m != nullptr);
+
+	//Material& mr = *m;
+	//Material* mptr = &mr;
+	//Hit* hitptr = &hit;
+	//auto wat = (*hitptr).material;
+	//auto watwat = hitptr->material;
 
 	// get the intersection point and normal.
 	Vec3f normal = hit.normal;
@@ -63,7 +69,7 @@ Vec3f RayTracer::traceRay(Ray& ray, float tmin, int bounces, float refr_index, H
 	// Apply ambient lighting using the ambient light of the scene
 	// and the diffuse color of the material.
 	
-	Vec3f answer = hit.normal;
+	Vec3f answer = m->diffuse_color(point) * scene_.getAmbientLight();
 
 	// YOUR CODE HERE (R4 & R7)
 	// For R4, loop over all the lights in the scene and add their contributions to the answer.
