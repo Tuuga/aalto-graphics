@@ -76,7 +76,9 @@ public:
 		// YOUR CODE HERE (R1)
 		// Generate a ray with the given screen coordinates, which you should assume lie in [-1,1]^2
 
-		return Ray(FW::Vec3f(point.x, point.y, 0.0f), FW::Vec3f(0.0f, 0.0f, 1.0f));
+		auto origin = center + (horizontal * point.x * size) + (-up * point.y * size);
+
+		return Ray(origin, direction);
 	}
 
 	bool isOrtho() const override { return true; }
@@ -109,7 +111,7 @@ public:
 		// YOUR CODE HERE (R3)
 		// Generate a ray with the given screen coordinates, which you should assume lie in [-1,1]^2
 		// How to do this is described in the lecture notes.
-		FW::Vec3f rayDir = direction + (point.x * horizontal) + (point.y * -up);
+		FW::Vec3f rayDir = direction + (tanf(point.x * fov_angle) * horizontal) + (tanf (point.y * fov_angle) * -up);
 		
 
 		return Ray(center, rayDir);

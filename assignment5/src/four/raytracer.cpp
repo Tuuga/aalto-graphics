@@ -78,6 +78,10 @@ Vec3f RayTracer::traceRay(Ray& ray, float tmin, int bounces, float refr_index, H
 	// For R7, if args_.shadows is on, also shoot a shadow ray from the hit point to the light
 	// to confirm it isn't blocked; if it is, ignore the contribution of the light.
 
+	for (int i = 0; i < scene_.getNumLights(); i++) {
+		//scene_.getLight()->getIncidentIllumination()
+	}
+
 	// are there bounces left?
 	if (bounces >= 1) {
 		// reflection, but only if reflective coefficient > 0!
