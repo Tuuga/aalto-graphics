@@ -76,7 +76,7 @@ public:
 		// YOUR CODE HERE (R1)
 		// Generate a ray with the given screen coordinates, which you should assume lie in [-1,1]^2
 
-		auto origin = center + (horizontal * point.x * size) + (-up * point.y * size);
+		auto origin = center + ((horizontal * point.x) + (-up * point.y)) * (size / 2);
 
 		return Ray(origin, direction);
 	}
@@ -111,7 +111,7 @@ public:
 		// YOUR CODE HERE (R3)
 		// Generate a ray with the given screen coordinates, which you should assume lie in [-1,1]^2
 		// How to do this is described in the lecture notes.
-		FW::Vec3f rayDir = direction + (tanf(point.x * fov_angle) * horizontal) + (tanf (point.y * fov_angle) * -up);
+		FW::Vec3f rayDir = direction + (point.x * tanf(fov_angle / 2) * horizontal) + (point.y * tanf(fov_angle / 2) * -up);
 		
 
 		return Ray(center, rayDir);

@@ -21,6 +21,7 @@ Vec3f PhongMaterial::shade(const Ray &ray, const Hit &hit,
 	// Remember, when computing the specular lobe, you shouldn't add
 	// anything if the light is below the local horizon!
 
+
 	Vec3f answer = Vec3f(0.0f);
 
 	return answer;
