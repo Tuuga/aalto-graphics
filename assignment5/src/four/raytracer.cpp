@@ -78,15 +78,19 @@ Vec3f RayTracer::traceRay(Ray& ray, float tmin, int bounces, float refr_index, H
 	// For R7, if args_.shadows is on, also shoot a shadow ray from the hit point to the light
 	// to confirm it isn't blocked; if it is, ignore the contribution of the light.
 
-
 	
 	for (int i = 0; i < scene_.getNumLights(); i++) {
 		FW::Vec3f _dirToLight;
 		FW::Vec3f _incidentIntensity;
 		float _distance;
-		scene_.getLight(i)->getIncidentIllumination(hit.t, _dirToLight, _incidentIntensity, _distance);
-		answer += m->diffuse_color(hit.t) * clamp(hit.normal.dot(_dirToLight) * _incidentIntensity, FW::Vec3f(0,0,0), FW::Vec3f(1,1,1));
+
+		scene_.getLight(i)->getIncidentIllumination(point, _dirToLight, _incidentIntensity, _distance);
+
+		answer += m->diffuse_color(point) * clamp(hit.normal.dot(_dirToLight) * _incidentIntensity, Vec3f(0), Vec3f(1));
+				+ m->shade(ray, hit, _dirToLight, _incidentIntensity, false);
 	}
+
+
 
 	// are there bounces left?
 	if (bounces >= 1) {

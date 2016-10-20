@@ -4,6 +4,7 @@
 #include "VecUtils.h"
 
 using namespace FW;
+using namespace std;
 
 Vec3f PhongMaterial::shade(const Ray &ray, const Hit &hit, 
 		const Vec3f &dir_to_light, 
@@ -20,10 +21,11 @@ Vec3f PhongMaterial::shade(const Ray &ray, const Hit &hit,
 	// you should return zero for hits coming from behind the surface.
 	// Remember, when computing the specular lobe, you shouldn't add
 	// anything if the light is below the local horizon!
-
-
-	Vec3f answer = Vec3f(0.0f);
-
+	
+	
+	auto r = -dir_to_light - 2.0f * (-dir_to_light).dot(hit.normal) * hit.normal;
+	auto v = -ray.direction;
+	Vec3f answer = specular_color_ * FW::pow(clamp(v.dot(r), 0.0f, 1.0f), exponent());
 	return answer;
 }
 

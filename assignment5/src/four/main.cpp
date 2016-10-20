@@ -70,6 +70,8 @@ int main(int argc, char *argv[]) {
 }
 
 GLuint render(RayTracer& ray_tracer, SceneParser& scene, const Args& args) {
+	cout << scene.getNumLights() << endl;
+
 	auto image_pixels = Vec2i(args.width, args.height);
 
 	// Construct images
