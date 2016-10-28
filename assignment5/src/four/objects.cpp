@@ -46,13 +46,30 @@ bool Plane::intersect( const Ray& r, Hit& h, float tmin ) const {
 	// Intersect the ray with the plane.
 	// Pay attention to respecting tmin and h.t!
 	// Equation for a plane:
+
 	// ax + by + cz = d;
+
 	// normal . p - d = 0
+	//cout << normal().dot(Vec3f(0, offset(), 0)) - d << endl;
+
 	// (plug in ray)
 	// origin + direction * t = p(t)
+
 	// origin . normal + t * direction . normal = d;
+	
+	if (FW::abs (normal().dot(r.direction)) == 0) {
+		return false;
+	}
+
 	// t = (d - origin . normal) / (direction . normal);
-	return false;
+	auto t = (offset() - r.origin.dot(normal())) / (r.direction.dot(normal()));
+
+	if (h.t < t || t < tmin) {
+		return false;
+	}
+
+	h.set(t, material_, normal());
+	return true;
 }
 
 Transform::Transform(const Mat4f& m, Object3D* o) :
@@ -80,7 +97,6 @@ bool Sphere::intersect( const Ray& r, Hit& h, float tmin ) const {
 	
 	Vec3f tmp = center_ - r.origin;
 	Vec3f dir = r.direction;
-
 	float A = dot(dir, dir);
 	float B = - 2 * dot(dir, tmp);
 	float C = dot(tmp, tmp) - sqr(radius_);
