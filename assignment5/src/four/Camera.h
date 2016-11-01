@@ -114,7 +114,7 @@ public:
 		FW::Vec3f rayDir = direction + (point.x * tanf(fov_angle / 2) * horizontal) + (point.y * tanf(fov_angle / 2) * -up);
 		
 
-		return Ray(center, rayDir);
+		return Ray(center, rayDir.normalized());
 	}
 
 	bool isOrtho() const override { return false; }
