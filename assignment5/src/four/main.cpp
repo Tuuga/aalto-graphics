@@ -135,10 +135,10 @@ GLuint render(RayTracer& ray_tracer, SceneParser& scene, const Args& args) {
 				// Trace the ray!
 				Hit hit;
 				float tmin = scene.getCamera()->getTMin();
+				Vec3f sample_color = ray_tracer.traceRay(r, tmin, args.bounces, 1.0f, hit);
 
 				// You should fill in the gaps in the implementation of traceRay().
 				// args.bounces gives the maximum number of reflections/refractions that should be traced.
-				Vec3f sample_color = ray_tracer.traceRay(r, tmin, args.bounces, 1.0f, hit);
 
 				// YOUR CODE HERE (R9)
 				// This starter code only supports one sample per pixel and consequently directly
@@ -158,8 +158,6 @@ GLuint render(RayTracer& ray_tracer, SceneParser& scene, const Args& args) {
 					// Note that closer objects should appear brighter.
 					
 					float depth = hit.t * -1.0f;
-					//cout << "depth: " << depth << endl;
-					//cout << "tmin: " << tmin << endl;
 
 					// Clamp
 					if (depth > 1.0f) {

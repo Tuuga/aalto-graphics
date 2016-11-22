@@ -26,7 +26,7 @@ UniformSampler::UniformSampler(int nSamples) :
 
 Vec2f UniformSampler::getSamplePosition(int i) {
 	// make the compiler shut up by referencing the variable
-	(void)i;	
+	(void)i;
 	// YOUR CODE HERE (R9)
 	// Return a uniformly distributed random 2-vector within the unit square [0,1]^2
 
