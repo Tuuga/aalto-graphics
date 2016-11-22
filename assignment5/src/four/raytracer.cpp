@@ -21,7 +21,8 @@ Vec3f mirrorDirection(const Vec3f& normal, const Vec3f& incoming) {
 	// YOUR CODE HERE (R8)
 	// Pay attention to the direction which things point towards, and that you only
 	// pass in normalized vectors.
-	return Vec3f();
+
+	return incoming - 2.0f * (incoming.dot(normal) * normal);
 }
 
 bool transmittedDirection(const Vec3f& normal, const Vec3f& incoming, 
@@ -55,12 +56,6 @@ Vec3f RayTracer::traceRay(Ray& ray, float tmin, int bounces, float refr_index, H
 	Material* m = hit.material;
 	assert(m != nullptr);
 
-	//Material& mr = *m;
-	//Material* mptr = &mr;
-	//Hit* hitptr = &hit;
-	//auto wat = (*hitptr).material;
-	//auto watwat = hitptr->material;
-
 	// get the intersection point and normal.
 	Vec3f normal = hit.normal;
 	Vec3f point = ray.pointAtParameter(hit.t);
@@ -86,6 +81,20 @@ Vec3f RayTracer::traceRay(Ray& ray, float tmin, int bounces, float refr_index, H
 
 		scene_.getLight(i)->getIncidentIllumination(point, _dirToLight, _incidentIntensity, _distance);
 
+		// Shadows
+		if (args_.shadows) {
+			// ray from hitpoint to light
+			Ray shadowRay = Ray(point - ray.direction.normalized() * 0.0001f, _dirToLight);
+
+			Hit shadowHit = Hit(FLT_MAX);
+			bool shadowIntersect = scene_.getGroup()->intersect(shadowRay, shadowHit, tmin);
+
+			// If itersects and hitpoint not behind light
+			if (shadowIntersect && shadowHit.t < _distance) {
+				continue;
+			}
+		}
+
 		answer += m->diffuse_color(point) * clamp(hit.normal.dot(_dirToLight) * _incidentIntensity, Vec3f(0), Vec3f(1));
 				+ m->shade(ray, hit, _dirToLight, _incidentIntensity, false);
 	}
@@ -96,10 +105,15 @@ Vec3f RayTracer::traceRay(Ray& ray, float tmin, int bounces, float refr_index, H
 	if (bounces >= 1) {
 		// reflection, but only if reflective coefficient > 0!
 		if (m->reflective_color(point).length() > 0.0f) {
+
 			// YOUR CODE HERE (R8)
 			// Generate and trace a reflected ray to the ideal mirror direction and add
 			// the contribution to the result. Remember to modulate the returned light
 			// by the reflective color of the material of the hit point.
+			Ray reflectionRay = Ray(point - ray.direction.normalized() * 0.0001f, mirrorDirection(hit.normal.normalized(), ray.direction.normalized()));
+			Hit reflectionHit;
+
+			answer += m->reflective_color(point) * traceRay(reflectionRay, tmin, bounces - 1, refr_index, reflectionHit);
 		}
 
 		// refraction, but only if surface is transparent!

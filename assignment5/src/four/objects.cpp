@@ -153,68 +153,39 @@ bool Triangle::intersect( const Ray& r, Hit& h, float tmin ) const {
 	// YOUR CODE HERE (R6)
 	// Intersect the triangle with the ray!
 	// Again, pay attention to respecting tmin and h.t!
+	
+	// Ericson: Real-time collision detection p.191-192
+	Vec3f p = r.origin;
+	Vec3f qp = -r.direction; // qp = p - q
+	Vec3f ab = vertices_[1] - vertices_[0];
+	Vec3f ac = vertices_[2] - vertices_[0];
+	Vec3f n = ab.cross(ac);
+	float d = qp.dot(n);
 
-	// compute plane's normal
-	auto v0 = vertices_[2];
-	auto v1 = vertices_[1];
-	auto v2 = vertices_[0];
+	//if(d<=0.0) return false; // sade pinnan suuntainen tai pinnan takaa
+	if (FW::abs(d) < 0.001) return false; // raakataan pinnan suuntaiset
 
-	Vec3f v0v1 = v1 - v0;
-	Vec3f v0v2 = v2 - v0;
-	// no need to normalize
-	Vec3f N = v0v1.cross(v0v2); // N 
-	float denom = N.dot(N);
+										  // haetaan t sille tasolle jolla kolmio on
+	Vec3f ap = p - vertices_[0];
+	float t = ap.dot(n);
 
-	// Step 1: finding P
+	float ood = 1.0f / d;
+	t *= ood;
+	if (t<tmin) return false;
+	if (t>h.t) return false;
 
-	// check if ray and plane are parallel ?
-	float NdotRayDirection = N.dot(r.direction);
-	if (fabs(NdotRayDirection) < FLT_EPSILON) // almost 0 
-		return false; // they are parallel so they don't intersect ! 
+	// barysentriset koordinaatit
+	Vec3f e = qp.cross(ap);
+	float v = ac.dot(e); v *= ood;
+	float w = -ab.dot(e); w *= ood;
+	if (v<0 || v>1) return false;
+	if (w<0 || v + w>1) return false;
 
-					  // compute d parameter using equation 2
-	float d = N.dot(v0);
+	// leikattiin kolmio
+	//float u=1.0f-v-w;
 
-	// compute t (equation 3)
-	auto t = (N.dot(r.origin) + d) / NdotRayDirection;
-	// check if the triangle is in behind the ray
-	if (t < tmin || t > h.t) return false; // the triangle is behind 
-
-							 // compute the intersection point using equation 1
-	Vec3f P = r.origin + t * r.direction;
-
-	// Step 2: inside-outside test
-	Vec3f C; // vector perpendicular to triangle's plane 
-
-	// edge 0
-	Vec3f edge0 = v1 - v0;
-	Vec3f vp0 = P - v0;
-	C = edge0.cross(vp0);
-	if (N.dot(C) < 0) return false; // P is on the right side 
-
-	// edge 1
-	Vec3f edge1 = v2 - v1;
-	Vec3f vp1 = P - v1;
-	C = edge1.cross(vp1);
-	float u, v;
-	if ((u = N.dot(C)) < 0)  return false; // P is on the right side 
-
-	// edge 2
-	Vec3f edge2 = v0 - v2;
-	Vec3f vp2 = P - v2;
-	C = edge2.cross(vp2);
-	if ((v = N.dot(C)) < 0) return false; // P is on the right side;
-
-	u /= denom;
-	v /= denom;
-
-	//h.normal = N.normalized();
-	h.normal = -r.direction.normalized();
-	h.t = t;
-	h.material = material_;
-
-
-	return true; // this ray hits the triangle 
+	h.set(t, material_, n.normalized());
+	return true;
 }
 
 const Vec3f& Triangle::vertex(int i) const {
